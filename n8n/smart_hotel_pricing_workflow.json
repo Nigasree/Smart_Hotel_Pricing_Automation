@@ -1,0 +1,228 @@
+{
+  "name": "smart_hotel_pricing_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            },
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        -96
+      ],
+      "id": "40c6329c-171d-4c93-a9f6-d2790b34e4a6",
+      "name": "Schedule Trigger",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5000/run-pricing",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -160,
+        64
+      ],
+      "id": "0ea86770-0a08-499f-a243-37d56ca1f1fe",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5497e476-2b9d-47da-a50a-8895bc5aee1d",
+              "leftValue": "={{ Number($json.predicted_demand) }}",
+              "rightValue": 80,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        80
+      ],
+      "id": "efc833da-b24e-4a66-90d4-d637b470c2ef",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"predicted_demand\": {{$json.predicted_demand}},\n  \"old_price\": {{$json.old_price}},\n  \"new_price\": {{$json.new_price}},\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "b1f33146-6fc5-4460-8854-16712f34c5c5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"demand_level\": \"NORMAL\",\n  \"final_price\": {{ $json.new_price }},\n  \"final_rooms\": {{ $json.available_rooms }},\n  \"action\": \"Normal pricing\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        176
+      ],
+      "id": "f793fe8e-97cb-4d5b-9387-d9b24c5bf17e",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "value": "pricing_output",
+          "mode": "list",
+          "cachedResultName": "pricing_output"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        528,
+        -48
+      ],
+      "id": "6f7e98c4-b6f6-4876-b537-42c081f8aff1",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "mySql": {
+          "id": "xNjgR2uad2pa7Ogg",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "abishaalexander27@gmail.com",
+        "subject": "High Demand Alert – Profit Opportunity",
+        "message": "=<p>Hello,</p>  <p>📈 <b>High demand detected</b> by the Smart Hotel Pricing AI.</p>  <ul>   <li><b>Predicted Demand:</b> {{$json.predicted_demand}}%</li>   <li><b>Old Price:</b> ₹{{$json.old_price}}</li>   <li><b>New Price:</b> ₹{{$json.new_price}}</li>   <li><b>Available Rooms:</b> {{$json.available_rooms}}</li> </ul>  <p> <b>Action Taken:</b><br> Surge pricing has been applied. You are likely to gain higher profit. </p>  <p> — <i>Smart Hotel Pricing System (AI + Automation)</i> </p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        -208
+      ],
+      "id": "93b0dc05-a8b5-437c-90ce-dad0c668b848",
+      "name": "Send a message",
+      "webhookId": "f6fcadfd-8252-43a0-a41b-9765e1ef4f95",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ssXXwOihOv57rLcx",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "44a92e4c-3c71-4006-bd25-a85e3f1abe6a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3ff7d8e0e7a49b0c125f7578eee3de2a25944527e1570936a89a2eeccdca91ed"
+  },
+  "id": "IUpOPIbPtdVcMwSftbbuE",
+  "tags": []
+}
