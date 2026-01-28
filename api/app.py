@@ -16,20 +16,19 @@ BASE_PRICE = 2500
 @app.route("/run-pricing", methods=["GET"])
 def run_pricing():
 
-    # ---- Simulated ML Output (replace later with real model) ----
+    
     predicted_demand = round(random.uniform(40, 95), 2)
 
-    # ---- Pricing Logic ----
+    
     new_price = int(BASE_PRICE * (1 + predicted_demand / 100))
     MIN_PRICE = 2230
     MAX_PRICE = 6020
     new_price = max(MIN_PRICE, min(new_price, MAX_PRICE))
 
-    # ---- Availability ----
     booked_rooms = int(TOTAL_ROOMS * (predicted_demand / 100))
     available_rooms = TOTAL_ROOMS - booked_rooms
 
-    # ---- Revenue & Profit (DAILY) ----
+    # Revenue & Profit (DAILY) 
     revenue_before = BASE_PRICE * booked_rooms
     revenue_after = new_price * booked_rooms
     profit = revenue_after - revenue_before
