@@ -1,3 +1,5 @@
+
+
 import pandas as pd
 import random
 from sqlalchemy import create_engine
@@ -34,41 +36,77 @@ model = RandomForestRegressor(
 model.fit(X_train, y_train)
 
 
-base_price = 3000
+base_price = 2500
 past_occupancy = random.randint(30, 95)
 weather_score = round(random.uniform(0.2, 0.9), 2)
 season = random.randint(1, 4)
 day_type = random.randint(0, 1)
 
-simulated_input = [[
-    base_price,
-    past_occupancy,
-    weather_score,
-    season,
-    day_type
-]]
+simulated_input = pd.DataFrame([{
+    "base_price": base_price,
+    "past_occupancy": past_occupancy,
+    "weather_score": weather_score,
+    "season": season,
+    "day_type": day_type
+}])
+
 
 prediction = model.predict(simulated_input)[0]
 new_price = int(base_price * (1 + prediction / 100))
-MIN_PRICE = 2500
+MIN_PRICE = 2230
 MAX_PRICE = 6020
 new_price = max(MIN_PRICE, min(new_price, MAX_PRICE))
 total_rooms = 30
 booked_rooms = int(total_rooms * (prediction / 100))
 available_rooms = total_rooms - booked_rooms
 
+# REVENUE & PROFIT CALCULATION (Daily)
+revenue_before = base_price * booked_rooms
+revenue_after = new_price * booked_rooms
+profit = revenue_after - revenue_before
+
+from sqlalchemy import text
+from datetime import date
+
+revenue_query = text("""
+INSERT INTO daily_revenue 
+(date, revenue_before, revenue_after, profit, booked_rooms)
+VALUES (:date, :rb, :ra, :profit, :br)
+""")
+
+with engine.connect() as conn:
+    conn.execute(revenue_query, {
+        "date": date.today(),
+        "rb": revenue_before,
+        "ra": revenue_after,
+        "profit": profit,
+        "br": booked_rooms
+    })
+    conn.commit()
+
+
+
 
 # OUTPUT
-print(" Smart Hotel Pricing Engine ")
-print("Past Occupancy (%):", past_occupancy)
-print("Weather Score:", weather_score)
-print("Season:", season)
-print("Day Type (0=Weekday, 1=Weekend):", day_type)
+output_df = pd.DataFrame([{
+    "predicted_demand": round(prediction, 2),
+    "old_price": base_price,
+    "new_price": new_price,
+    "booked_rooms": booked_rooms,
+    "available_rooms": available_rooms,
+    "revenue_before": revenue_before,
+    "revenue_after": revenue_after,
+    "profit": profit
+}])
+
 print("Predicted Demand (%):", round(prediction, 2))
 print("Old Price:", base_price)
-print("New Price (Auto Updated):", new_price)
-print("Total Rooms:", total_rooms)
-print("Available Rooms (Auto):", available_rooms)
+print("New Price:", new_price)
+print("Booked Rooms:", booked_rooms)
+print("Available Rooms:", available_rooms)
+print("Revenue Before AI:", revenue_before)
+print("Revenue After AI:", revenue_after)
+print("Profit:", profit)
 
 
 output_df = pd.DataFrame([{
