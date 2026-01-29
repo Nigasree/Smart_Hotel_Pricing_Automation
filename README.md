@@ -34,17 +34,13 @@ Historical hotel data is stored in MySQL and used to train a machine learning mo
 
 
 ## Screenshots
+(https://github.com/user-attachments/assets/637b462d-a3a3-46c0-a6ec-8d3dd0d9812f) #pricing_output
+(https://github.com/user-attachments/assets/a9269e3a-468e-485b-9a11-86d3c15a1313) #daily_revenue
 
-(https://github.com/user-attachments/assets/a9269e3a-468e-485b-9a11-86d3c15a1313)#daily_revenue
 
+(https://github.com/user-attachments/assets/c4f60dc9-3a73-4b4c-8a7a-7aaf6484c4d3) #N8N Workflow
+(https://github.com/user-attachments/assets/8127668a-74d0-4a67-b2fb-d1db9cc95711) #notification
 
-(https://github.com/user-attachments/assets/8127668a-74d0-4a67-b2fb-d1db9cc95711)#notification
-
-(https://github.com/user-attachments/assets/637b462d-a3a3-46c0-a6ec-8d3dd0d9812f)
-
-(https://github.com/user-attachments/assets/c4f60dc9-3a73-4b4c-8a7a-7aaf6484c4d3)
-
-(https://github.com/user-attachments/assets/08c42978-0a51-45ca-b222-48227c020d9a)
 ## Demo
 
 https://github.com/user-attachments/assets/6d2cb3a7-35a3-44c1-bda2-77c5bb770a70
